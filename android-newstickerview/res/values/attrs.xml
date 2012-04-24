@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+    <declare-styleable name = "NewsTickerView">
+		<attr name="enableTimeLine" format="boolean" />
+		<attr name="timeLineColor" format="reference|color" />
+		<attr name="timeLineWidth" format="integer" />
+		<attr name="loadingAnimationImageView" format = "integer"/>
+		<attr name="loadingText" format = "string"/>
+		<attr name="loadingErrorText" format = "string"/>
+		<attr name="noNewsText" format = "string"/>
+	</declare-styleable>
+</resources>

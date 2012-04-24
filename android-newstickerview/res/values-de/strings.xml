@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- NewTicker default localization -->
+    <string name="newsticker_loadingtext">Laden...</string>
+    <string name="newsticker_loadingerrortext">Konnte keine News zu laden. Überprüfen Sie Ihre Internet-Verbindung, und tippen Sie um es erneut zu versuchen.</string>
+    <string name="newsticker_nonewstext">Keine News gefunden. Tippen Sie um es erneut zu versuchen.</string>
+</resources>
