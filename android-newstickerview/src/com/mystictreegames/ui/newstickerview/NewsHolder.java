@@ -22,6 +22,15 @@ public class NewsHolder implements Parcelable {
 	/**
 	 * Create a news holder with all requited data
 	 */
+	public NewsHolder() {
+		mNews = "";
+		mLink = "";
+		mTime = 0;
+	}
+	
+	/**
+	 * Create a news holder with all requited data
+	 */
 	public NewsHolder( String news, String link, Integer time ) {
 		mNews = news;
 		mLink = link;
