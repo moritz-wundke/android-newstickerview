@@ -339,6 +339,11 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 		changeNews();
 	}
 	
+	/** We got some news */
+	public boolean hasNews() {
+		return mNewsList != null && mNewsList.size() > 0;
+	}
+	
 	/** Called when no news could be found. */
 	public void onNoNewsFound() {
 		bLoadingError = true;
