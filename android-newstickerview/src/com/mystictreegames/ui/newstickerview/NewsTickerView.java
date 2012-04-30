@@ -269,7 +269,7 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 						// TODO: If there where a loading error launch the loading error delegate!
 						// bLoadingError
 						// Get the right URL and fire the intent
-						if (mNewsList != null && mIndex >= 0 && mIndex < mNewsList.size() ) {
+						if (hasNews() && mIndex >= 0 && mIndex < mNewsList.size() ) {
 							String link = mNewsList.get(mIndex).mLink;
 							if ( link != null && link.length() > 0 ) {
 								Intent i = new Intent(Intent.ACTION_VIEW);
@@ -293,7 +293,7 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 	 * Check if we should show the timeline or not
 	 */
 	public boolean showTimeLine() {
-		return bEnableTimeLine && (mNewsList != null && mNewsList.size() > 0);
+		return bEnableTimeLine && hasNews();
 	}
 	
 	/**
@@ -375,7 +375,7 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 	public void changeNews() {
 		// Once detached stop all handlers
 		synchronized (this) {
-			if ( !bDetached && !bIsLoadingNews && mNewsList != null && mNewsList.size() > 0 ) {
+			if ( !bDetached && !bIsLoadingNews && hasNews() ) {
 				// Update index
 				mIndex++;		
 				mIndex = mIndex % mNewsList.size();
@@ -411,10 +411,12 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 				mFadeAlpha = 1.f;
 				updateTextAlpha();
 				
-				// Set new time
-				NewsHolder news = mNewsList.get(mIndex);					
-				if ( news != null ) {	
-					mNewsTickerHandler.sleep((news.mTime-FADE_TIME)*1000);
+				if ( hasNews() ) {
+					// Set new time
+					NewsHolder news = mNewsList.get(mIndex);					
+					if ( news != null ) {	
+						mNewsTickerHandler.sleep((news.mTime-FADE_TIME)*1000);
+					}
 				}
 			}
 		}
