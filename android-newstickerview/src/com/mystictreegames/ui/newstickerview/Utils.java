@@ -24,6 +24,13 @@ public class Utils {
 		return x < a ? a : (x > b ? b : x);
 	}
 	
+	/**
+	 * Clamp a int between to given ones
+	 */
+	public static int clamp(int x, int a, int b) {
+		return x < a ? a : (x > b ? b : x);
+	}
+	
 	/** Combine a rgb/argb value with a linear alpha into a simple argb */
 	public static int combineColor(int rgb, float alpha) {
 		int iAlpha = ((alpha) >= 1.0 ? 255 : (int)((alpha)*256.0));
