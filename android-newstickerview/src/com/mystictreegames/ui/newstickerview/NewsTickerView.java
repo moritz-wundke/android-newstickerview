@@ -333,9 +333,11 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 	
 	/** Set the news :D */
 	public void setNews(List<NewsHolder> newsList) {
-		mNewsList = newsList;
-		bIsLoadingNews = false;
-		bLoadingError = false;
+		synchronized (this) {
+			mNewsList = newsList;
+			bIsLoadingNews = false;
+			bLoadingError = false;
+		}
 		changeNews();
 	}
 	
@@ -381,21 +383,27 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 				mIndex = mIndex % mNewsList.size();
 				
 				// Get the news
-				NewsHolder news = mNewsList.get(mIndex);					
-				if ( news != null ) {					
-					// Set text
-					setText(news.mNews);
-					
-					// Start fade-in
-					mFadeAnimationHandler.startFadeIn();
-					
-					// Start time handling too
-					if ( showTimeLine() ) {
-						mTimeToHandle = (long) ((news.mTime+FADE_TIME*2)*1000);
-						mStartTime = System.currentTimeMillis();
+				try {
+					NewsHolder news = mNewsList.get(mIndex);					
+					if ( news != null ) {					
+						// Set text
+						setText(news.mNews);
+						
+						// Start fade-in
+						mFadeAnimationHandler.startFadeIn();
+						
+						// Start time handling too
+						if ( showTimeLine() ) {
+							mTimeToHandle = (long) ((news.mTime+FADE_TIME*2)*1000);
+							mStartTime = System.currentTimeMillis();
+						}
+						onStopLoading();
+					} else {
+						// Failed to set news. This should never happen!
+						Log.e(TAG, "News loading finished but no news found for index("+mIndex+"), news size("+mNewsList.size()+")");
+						onNewsLoadingFailed();
 					}
-					onStopLoading();
-				} else {
+				} catch ( Exception e ) {
 					// Failed to set news. This should never happen!
 					Log.e(TAG, "News loading finished but no news found for index("+mIndex+"), news size("+mNewsList.size()+")");
 					onNewsLoadingFailed();
