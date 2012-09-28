@@ -2,6 +2,7 @@ package com.mystictreegames.ui.newstickerview;
 
 import java.util.List;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
@@ -116,6 +117,9 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 	/** Flag used to control whether we are loading news or not */
 	private boolean bIsLoadingNews;
 	
+	/** The action listener */
+	private NewsActionListener mListener;
+	
 	public NewsTickerView(Context context) {
 		super(context);
 		
@@ -157,6 +161,11 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 		mFadeAnimationHandler = new FadeAnimationHandler();
 		mTimeLeftPaint.setColor(mTimeLineColor);
 		mTimeLeftPaint.setStrokeWidth(mTimeLineWidth);
+	}
+	
+	/** Register a new news action listener */
+	public void setNewActionListener(NewsActionListener listener) {
+		mListener = listener;
 	}
 	
 	/** Set the res id of the view that will be used as the loading image */
@@ -269,12 +278,21 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 						// TODO: If there where a loading error launch the loading error delegate!
 						// bLoadingError
 						// Get the right URL and fire the intent
-						if (hasNews() && mIndex >= 0 && mIndex < mNewsList.size() ) {
+						if ( bLoadingError ) {
+							if ( mListener != null )
+								mListener.onNewsTapFailed();
+						} else if (hasNews() && mIndex >= 0 && mIndex < mNewsList.size() ) {
 							String link = mNewsList.get(mIndex).mLink;
 							if ( link != null && link.length() > 0 ) {
-								Intent i = new Intent(Intent.ACTION_VIEW);
-								i.setData(Uri.parse(link));
-								getContext().startActivity(i);
+								try {
+									Intent i = new Intent(Intent.ACTION_VIEW);
+									i.setData(Uri.parse(link));
+									getContext().startActivity(i);
+								} catch ( ActivityNotFoundException e) {
+									Log.e(TAG, "Could not launch activity for link '"+link+"' with error: "+Log.getStackTraceString(e));
+								}
+								if ( mListener != null )
+									mListener.onNewsTap();
 							}
 						}
 						bResult = true;
@@ -359,6 +377,8 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 		bIsLoadingNews = false;
 		setText(errorText != "" ? errorText: this.mLoadingErrorText);
 		onStopLoading();
+		if ( mListener != null )
+			mListener.onNewsFailed();
 	}
 	
 	/** Invoke default loading error */
@@ -606,5 +626,13 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 					return new SavedState[size];
 				}
 		};
+	}
+	
+	public interface NewsActionListener {
+		void onNewsFailed();
+		
+		void onNewsTap();
+		
+		void onNewsTapFailed();
 	}
 }
