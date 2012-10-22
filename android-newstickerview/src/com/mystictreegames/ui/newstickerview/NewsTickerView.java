@@ -1,5 +1,6 @@
 package com.mystictreegames.ui.newstickerview;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import android.content.ActivityNotFoundException;
@@ -157,8 +158,8 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 	private void init() {
 		// Get rid of any text that could be in here. We will set the news for it
 		setText("");
-		mNewsTickerHandler = new NewsTickerHandler();
-		mFadeAnimationHandler = new FadeAnimationHandler();
+		mNewsTickerHandler = new NewsTickerHandler(this);
+		mFadeAnimationHandler = new FadeAnimationHandler(this);
 		mTimeLeftPaint.setColor(mTimeLineColor);
 		mTimeLeftPaint.setStrokeWidth(mTimeLineWidth);
 	}
@@ -355,6 +356,11 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 			mNewsList = newsList;
 			bIsLoadingNews = false;
 			bLoadingError = false;
+			
+			// If we have no news this is actually an error!
+			if ( newsList != null && newsList.size() == 0 ) {
+				onNewsLoadingFailed(mNoNewsText);
+			}
 		}
 		changeNews();
 	}
@@ -521,12 +527,19 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 	/**
 	 * Inner class used to make a fixed timed animation of the curl effect.
 	 */
-	class NewsTickerHandler extends Handler {
+	static class NewsTickerHandler extends Handler {		
+		WeakReference<NewsTickerView> mNewsTickerRef;
+		
+		public NewsTickerHandler(NewsTickerView ticker) {
+			mNewsTickerRef = new WeakReference<NewsTickerView>(ticker);
+		}
+		
 		@Override
 		public void handleMessage(Message msg) {
 			synchronized (this) {
-				if ( !bDetached ) {
-					mFadeAnimationHandler.startFadeOut();
+				NewsTickerView ticker = mNewsTickerRef.get();
+				if ( ticker != null && !ticker.bDetached ) {
+					ticker.mFadeAnimationHandler.startFadeOut();
 				}
 			}
 		}
@@ -540,22 +553,30 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 	/**
 	 * Handler used to fade out and in.
 	 */
-	class FadeAnimationHandler extends Handler {
+	static class FadeAnimationHandler extends Handler {
 		private static final int FADE_OUT_CODE = 0;
 		private static final int FADE_IN_CODE = 1;
+		
+		WeakReference<NewsTickerView> mNewsTickerRef;
+		
+		public FadeAnimationHandler(NewsTickerView ticker) {
+			mNewsTickerRef = new WeakReference<NewsTickerView>(ticker);
+		}
+		
 		
 		@Override
 		public void handleMessage(Message msg) {
 			synchronized (this) {
-				if ( !bDetached ) {
+				NewsTickerView ticker = mNewsTickerRef.get();
+				if ( ticker != null && !ticker.bDetached ) {
 					int direction = (msg.what == FADE_IN_CODE)?1:-1;
-					NewsTickerView.this.mFadeAlpha += (FADE_ANIMATION_RATE_SECS/(float)FADE_TIME)*direction;
-					NewsTickerView.this.updateTextAlpha();
+					ticker.mFadeAlpha += (FADE_ANIMATION_RATE_SECS/(float)FADE_TIME)*direction;
+					ticker.updateTextAlpha();
 					
-					if ( NewsTickerView.this.mFadeAlpha <= 0.f && (msg.what == FADE_OUT_CODE) ) {
-						NewsTickerView.this.fadedOut();
-					} else if ( NewsTickerView.this.mFadeAlpha >= 1.f && (msg.what == FADE_IN_CODE) ) {
-						NewsTickerView.this.fadedIn();
+					if ( ticker.mFadeAlpha <= 0.f && (msg.what == FADE_OUT_CODE) ) {
+						ticker.fadedOut();
+					} else if ( ticker.mFadeAlpha >= 1.f && (msg.what == FADE_IN_CODE) ) {
+						ticker.fadedIn();
 					} else {
 						sleep(msg.what);
 					}
@@ -564,15 +585,21 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 		}
 		
 		public void startFadeIn() {
-			NewsTickerView.this.mFadeAlpha = 0;
-			NewsTickerView.this.updateTextAlpha();
-			startAnimation(FADE_IN_CODE);
+			NewsTickerView ticker = mNewsTickerRef.get();
+			if ( ticker != null ) {
+				ticker.mFadeAlpha = 0;
+				ticker.updateTextAlpha();
+				startAnimation(FADE_IN_CODE);
+			}
 		}
 		
 		public void startFadeOut() {
-			NewsTickerView.this.mFadeAlpha = 1;
-			NewsTickerView.this.updateTextAlpha();
-			startAnimation(FADE_OUT_CODE);
+			NewsTickerView ticker = mNewsTickerRef.get();
+			if ( ticker != null ) {
+				ticker.mFadeAlpha = 1;
+				ticker.updateTextAlpha();
+				startAnimation(FADE_OUT_CODE);
+			}
 		}
 		
 		/**
