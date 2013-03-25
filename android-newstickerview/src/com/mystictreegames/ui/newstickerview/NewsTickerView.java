@@ -55,6 +55,9 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 	public static final float FADE_ANIMATION_RATE_SECS = FADE_ANIMATION_RATE/1000.f;
 	public static final int FADE_TIME = 1;
 	
+	/** Number of move action to be considered a swipe */
+	public static final int MOVE_ACTOIN_THRESHOLD = 3;
+	
 	/** Current applied alpha value */
 	private float mFadeAlpha = 1;
 
@@ -75,6 +78,9 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 	
 	/** Last registered motion event */
 	private int mLastMotionEvent = -1;
+	
+	/** NUmber of move events, a swipe needs at least 3 move events */
+	private int mNumMoveEvent = 0;
 	
 	/** The news animation handler that will swap to the next news time by time */
 	private NewsTickerHandler mNewsTickerHandler;
@@ -273,9 +279,11 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 				case MotionEvent.ACTION_DOWN: 
 				case MotionEvent.ACTION_MOVE:
 					mLastMotionEvent = action;
+					if ( action == MotionEvent.ACTION_MOVE )
+						mNumMoveEvent++;
 					break;
 				case MotionEvent.ACTION_UP:
-					if ( mLastMotionEvent == MotionEvent.ACTION_DOWN ) {
+					if ( mLastMotionEvent == MotionEvent.ACTION_DOWN || mNumMoveEvent < MOVE_ACTOIN_THRESHOLD ) {
 						// TODO: If there where a loading error launch the loading error delegate!
 						// bLoadingError
 						// Get the right URL and fire the intent
@@ -301,7 +309,11 @@ public class NewsTickerView extends TextView implements OnTouchListener {
 						changeNews();
 						bResult = true;
 					}
+					
+					Log.e(TAG, "mNumMoveEvent: "+ mNumMoveEvent);
+					
 					mLastMotionEvent = -1;
+					mNumMoveEvent = 0;
 					break;
 			}
 		}
